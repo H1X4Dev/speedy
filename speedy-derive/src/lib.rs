@@ -17,8 +17,6 @@ use quote::ToTokens;
 use syn::punctuated::Punctuated;
 use syn::spanned::Spanned;
 use syn::TypeParam;
-use crate::FieldAttribute::UTF16;
-use crate::kw::utf16;
 
 trait IterExt: Iterator + Sized {
     fn collect_vec( self ) -> Vec< Self::Item > {
