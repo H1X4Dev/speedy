@@ -93,7 +93,7 @@ fn possibly_uses_generic_ty( generic_types: &[&syn::Ident], ty: &syn::Type ) -> 
                                 syn::GenericArgument::AssocType( assoc_type ) => possibly_uses_generic_ty( generic_types, &assoc_type.ty ),
                                 // TODO: How to handle these?
                                 syn::GenericArgument::Constraint( .. ) => true,
-                                syn::GenericArgument::Const( .. ) => true,
+                                syn::GenericArgument::Const( .. ) => false,
                                 syn::GenericArgument::AssocConst(_) => true,
                                 _ => true,
                             }
