@@ -860,6 +860,9 @@ enum FieldAttribute {
     },
     VarInt {
         key_span: Span
+    },
+    Wchar {
+        key_span: Span
     }
 }
 
@@ -1208,6 +1211,7 @@ fn get_fields< 'a, I: IntoIterator< Item = &'a syn::Field > + 'a >( fields: I ) 
             let mut skip = false;
             let mut varint = false;
             let mut constant_prefix = None;
+            let mut wchar = false;
             for attr in parse_attributes::< FieldAttribute >( &field.attrs )? {
                 match attr {
                     FieldAttribute::DefaultOnEof { key_span } => {
@@ -1255,6 +1259,9 @@ fn get_fields< 'a, I: IntoIterator< Item = &'a syn::Field > + 'a >( fields: I ) 
                         }
 
                         varint = true;
+                    },
+                    FieldAttribute::Wchar { key_span } => {
+                        wchar = true;
                     }
                 }
             }
