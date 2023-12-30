@@ -1260,9 +1260,9 @@ fn get_fields< 'a, I: IntoIterator< Item = &'a syn::Field > + 'a >( fields: I ) 
 
                         varint = true;
                     },
-                    FieldAttribute::Wchar { key_span } => {
+                    FieldAttribute::Wchar { key_span: _key_span } => {
                         wchar = true;
-                    }
+                    },
                 }
             }
 
