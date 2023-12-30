@@ -13,17 +13,17 @@ description = "A fast binary serialization framework"
 edition = "2018"
 
 [dependencies]
-memoffset = "0.8"
+memoffset = "0.9"
 speedy-derive = { version = "= 0.8.6", path = "speedy-derive", optional = true }
 chrono = { version = "0.4", optional = true }
 glam = { version = ">= 0.15, <= 0.24", optional = true }
 smallvec = { version = "1", optional = true }
 regex = { version = "1", optional = true, default-features = false }
 uuid = {version = "1", optional = true, default-features = false }
-indexmap = { version = "1", optional = true }
+indexmap = { version = "2", optional = true }
 
 [dev-dependencies]
-quickcheck = "0.9"
+quickcheck = "1.0"
 paste = "1"
 tempfile = "3"
 
