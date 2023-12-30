@@ -1393,7 +1393,8 @@ fn get_fields< 'a, I: IntoIterator< Item = &'a syn::Field > + 'a >( fields: I ) 
                 ty,
                 skip,
                 varint,
-                constant_prefix
+                constant_prefix,
+                wchar
             })
         });
 
