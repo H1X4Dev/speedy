@@ -307,7 +307,11 @@ fn common_tokens( ast: &syn::DeriveInput, types: &[syn::Type], trait_variant: Tr
     let ty_params = {
         let lifetime_params = ast.generics.lifetimes().map( |alpha| quote! { #alpha } );
         let type_params = ast.generics.type_params().map( |ty| { let ident = &ty.ident; quote! { #ident } } );
-        let params = lifetime_params.chain( type_params ).collect_vec();
+        let const_params = ast.generics.const_params().map(|cty| {
+            let ident = &cty.ident;
+            quote! { #ident }
+        });
+        let params = lifetime_params.chain( type_params ).chain(const_params).collect_vec();
         if params.is_empty() {
             quote! {}
         } else {
