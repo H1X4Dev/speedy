@@ -284,20 +284,11 @@ fn parse_primitive_ty( ty: &syn::Type ) -> Option< PrimitiveTy > {
     }
 }
 
-// bug here for const generics, does not collect proper implementation parameters.
 fn common_tokens( ast: &syn::DeriveInput, types: &[syn::Type], trait_variant: Trait ) -> (TokenStream, TokenStream, TokenStream) {
     let impl_params = {
         let lifetime_params = ast.generics.lifetimes().map( |alpha| quote! { #alpha } );
         let type_params = ast.generics.type_params().map( |ty| { let ty_without_default = TypeParam { default: None, ..ty.clone() }; quote! { #ty_without_default } });
-        let const_params = ast.generics.const_params().map(|cty| {
-            let cty_without_default = ConstParam {
-                default: None,
-                ..cty.clone()
-            };
-            quote! {
-                #cty_without_default
-            }
-        });
+        let const_params = ast.generics.const_params().map(|cty| { let cty_without_default = ConstParam { default: None, ..cty.clone() }; quote! { #cty_without_default } });
         let params = lifetime_params.chain( type_params ).chain(const_params).collect_vec();
         quote! {
             #(#params,)*
@@ -307,10 +298,7 @@ fn common_tokens( ast: &syn::DeriveInput, types: &[syn::Type], trait_variant: Tr
     let ty_params = {
         let lifetime_params = ast.generics.lifetimes().map( |alpha| quote! { #alpha } );
         let type_params = ast.generics.type_params().map( |ty| { let ident = &ty.ident; quote! { #ident } } );
-        let const_params = ast.generics.const_params().map(|cty| {
-            let ident = &cty.ident;
-            quote! { #ident }
-        });
+        let const_params = ast.generics.const_params().map(|cty| { let ident = &cty.ident; quote! { #ident } });
         let params = lifetime_params.chain( type_params ).chain(const_params).collect_vec();
         if params.is_empty() {
             quote! {}
@@ -2533,8 +2521,6 @@ fn impl_writable( input: syn::DeriveInput ) -> Result< TokenStream, syn::Error >
         }
     };
 
-    // Generic bug is here
-    // missing const generics!
     let (impl_params, ty_params, where_clause) = common_tokens( &input, &types, Trait::Writable );
     let output = quote! {
         impl< #impl_params C_: speedy::Context > speedy::Writable< C_ > for #name #ty_params #where_clause {
