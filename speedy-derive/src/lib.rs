@@ -92,9 +92,9 @@ fn possibly_uses_generic_ty( generic_types: &[&syn::Ident], ty: &syn::Type ) -> 
                                 syn::GenericArgument::Type( inner_ty ) => possibly_uses_generic_ty( generic_types, inner_ty ),
                                 syn::GenericArgument::AssocType( assoc_type ) => possibly_uses_generic_ty( generic_types, &assoc_type.ty ),
                                 // TODO: How to handle these?
-                                syn::GenericArgument::Constraint( .. ) => false,
-                                syn::GenericArgument::Const( .. ) => false,
-                                syn::GenericArgument::AssocConst(_) => false,
+                                syn::GenericArgument::Constraint( .. ) => true,
+                                syn::GenericArgument::Const( .. ) => true,
+                                syn::GenericArgument::AssocConst(_) => true,
                                 _ => true,
                             }
                         })
@@ -340,8 +340,7 @@ fn common_tokens( ast: &syn::DeriveInput, types: &[syn::Type], trait_variant: Tr
         if items.is_empty() {
             quote! {}
         } else {
-            quote! {}
-            //quote! { where #(#items),* }
+            quote! { where #(#items),* }
         }
     };
 
