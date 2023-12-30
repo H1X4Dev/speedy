@@ -161,6 +161,10 @@ Can be used only on `u64` fields. Forces the field to be serialized as a varint.
 
 Skips a given field when reading and writing.
 
+### `#[speedy(utf16)]`
+
+Writes `String` as UTF-16 instead of UTF-8.
+
 ### `#[speedy(default_on_eof)]`
 
 If an EOF is encountered when reading this field its value will be set
