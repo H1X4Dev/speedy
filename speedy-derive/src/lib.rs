@@ -1677,7 +1677,7 @@ fn read_field_body( field: &Field ) -> TokenStream {
         }};
 
     let body = match field.ty.inner() {
-        Ty::String => read_string(),
+        Ty::String => read_string(field.wchar),
         Ty::Vec( .. ) => read_vec(),
         Ty::CowSlice( .. ) => read_cow_slice(),
         Ty::CowStr( .. ) => read_cow_str(),
