@@ -318,8 +318,7 @@ fn common_tokens( ast: &syn::DeriveInput, types: &[syn::Type], trait_variant: Tr
                     if is_forced || (is_packed && parse_primitive_ty( ty ).is_some()) {
                         None
                     } else {
-                        None // test
-                        //Some( quote! { #ty: speedy::private::ZeroCopyable< C_, T_ > } )
+                        Some( quote! { #ty: speedy::private::ZeroCopyable< C_, T_ > } )
                     }
                 },
             }
@@ -341,7 +340,8 @@ fn common_tokens( ast: &syn::DeriveInput, types: &[syn::Type], trait_variant: Tr
         if items.is_empty() {
             quote! {}
         } else {
-            quote! { where #(#items),* }
+            quote! {}
+            //quote! { where #(#items),* }
         }
     };
 
