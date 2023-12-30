@@ -757,7 +757,8 @@ struct Field< 'a > {
     ty: Opt< Ty >,
     skip: bool,
     varint: bool,
-    constant_prefix: Option< syn::LitByteStr >
+    constant_prefix: Option< syn::LitByteStr >,
+    wchar: bool
 }
 
 impl< 'a > Field< 'a > {
