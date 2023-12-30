@@ -1456,16 +1456,35 @@ fn read_field_body( field: &Field ) -> TokenStream {
     };
 
     // H1X4: impl wchar here
-    let read_string = || {
-        if let Some( ref read_length_body ) = read_length_body {
+    let read_string = |wchar| {
+        if wchar {
             quote! {{
+            if let Some(ref read_length_body) = read_length_body {
                 let _length_ = #read_length_body;
-                _reader_.read_vec( _length_ ).and_then( speedy::private::vec_to_string )
-            }}
+                _reader_.read_vec(_length_ * 2).map(|bytes| {
+                    String::from_utf16(&bytes.chunks_exact(2)
+                        .map(|chunk| u16::from_ne_bytes([chunk[0], chunk[1]]))
+                        .collect::<Vec<u16>>())
+                        .unwrap_or_else(|_| String::new())
+                })
+            } else {
+                quote! {{
+                    // Handling variable-length UTF-16 strings is complex and not covered here
+                    unimplemented!()
+                }}
+            }
+        }}
         } else {
             quote! {{
-                _reader_.read_vec_until_eof().and_then( speedy::private::vec_to_string )
-            }}
+            if let Some(ref read_length_body) = read_length_body {
+                let _length_ = #read_length_body;
+                _reader_.read_vec(_length_).and_then(speedy::private::vec_to_string)
+            } else {
+                quote! {{
+                    _reader_.read_vec_until_eof().and_then(speedy::private::vec_to_string)
+                }}
+            }
+        }}
         }
     };
 
@@ -1758,11 +1777,22 @@ fn write_field_body( field: &Field ) -> TokenStream {
     };
 
     // H1X4: impl wchar here
-    let write_str = ||
-        quote! {{
+    let write_str = |wchar| {
+        if wchar {
+            quote! {{
+            let utf16_bytes: Vec<u16> = #name.encode_utf16().collect();
+            for &b in utf16_bytes.iter() {
+                _writer_.write_all(&b.to_ne_bytes())?;
+            }
             #write_length_body
-            _writer_.write_slice( #name.as_bytes() )?;
-        }};
+        }}
+        } else {
+            quote! {{
+            #write_length_body
+            _writer_.write_slice(#name.as_bytes())?;
+        }}
+        }
+    };
 
     let write_slice = ||
         quote! {{
@@ -1800,7 +1830,7 @@ fn write_field_body( field: &Field ) -> TokenStream {
         Ty::String |
         Ty::CowStr( .. ) |
         Ty::RefStr( .. )
-            => write_str(),
+            => write_str(field.wchar),
         Ty::Vec( .. ) |
         Ty::CowSlice( .. ) |
         Ty::RefSliceU8( .. ) |
