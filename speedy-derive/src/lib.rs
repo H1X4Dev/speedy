@@ -1458,31 +1458,35 @@ fn read_field_body( field: &Field ) -> TokenStream {
     // H1X4: impl wchar here
     let read_string = |wchar| {
         if wchar {
-            quote! {{
-                if let Some(ref read_length_body) = read_length_body {
+            if let Some( ref read_length_body ) = read_length_body {
+                quote! {{
                     let _length_ = #read_length_body;
-                    let byte_count = _length_ * 2;
-                    _reader_.read_vec(byte_count).map(|bytes| {
+                    _reader_.read_vec(_length_ * 2).map(|bytes| {
                         let mut utf16_chars = Vec::with_capacity(bytes.len() / 2);
                         for chunk in bytes.chunks_exact(2) {
                             utf16_chars.push(u16::from_le_bytes([chunk[0], chunk[1]]));
                         }
                         String::from_utf16(&utf16_chars).unwrap_or_else(|_| String::new())
                     })
-                } else {
-                    // Handling variable-length UTF-16 strings is not implemented
+                    //_reader_.read_vec( _length_ ).and_then( speedy::private::vec_to_string )
+                }}
+            } else {
+                quote! {{
                     unimplemented!()
-                }
-            }}
+                    //_reader_.read_vec_until_eof().and_then( speedy::private::vec_to_string )
+                }}
+            }
         } else {
-            quote! {{
-                if let Some(ref read_length_body) = read_length_body {
+            if let Some( ref read_length_body ) = read_length_body {
+                quote! {{
                     let _length_ = #read_length_body;
-                    _reader_.read_vec(_length_).and_then(speedy::private::vec_to_string)
-                } else {
-                    _reader_.read_vec_until_eof().and_then(speedy::private::vec_to_string)
-                }
-            }}
+                    _reader_.read_vec( _length_ ).and_then( speedy::private::vec_to_string )
+                }}
+            } else {
+                quote! {{
+                    _reader_.read_vec_until_eof().and_then( speedy::private::vec_to_string )
+                }}
+            }
         }
     };
 
@@ -1496,6 +1500,17 @@ fn read_field_body( field: &Field ) -> TokenStream {
             quote! {{
                 _reader_.read_vec_until_eof()
             }}
+        }
+    };
+
+    let read_vec16 = || {
+        if let Some( ref read_length_body ) = read_length_body {
+            quote! {{
+                let _length_ = #read_length_body;
+                _reader_.read_vec( _length_ * 2 )
+            }}
+        } else {
+            unimplemented!()
         }
     };
 
