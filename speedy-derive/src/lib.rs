@@ -891,8 +891,13 @@ impl syn::parse::Parse for FieldAttribute {
                 ty
             }
         } else if lookahead.peek( kw::skip ) {
-            let key_token = input.parse::< kw::skip >()?;
+            let key_token = input.parse::<kw::skip>()?;
             FieldAttribute::Skip {
+                key_span: key_token.span()
+            }
+        } else if lookahead.peek(kw::wchar) {
+            let key_token = input.parse::<kw::wchar>()?;
+            FieldAttribute::Wchar {
                 key_span: key_token.span()
             }
         } else if lookahead.peek( kw::constant_prefix ) {
