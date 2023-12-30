@@ -1504,17 +1504,6 @@ fn read_field_body( field: &Field ) -> TokenStream {
         }
     };
 
-    let read_vec16 = || {
-        if let Some( ref read_length_body ) = read_length_body {
-            quote! {{
-                let _length_ = #read_length_body;
-                _reader_.read_vec( _length_ * 2 )
-            }}
-        } else {
-            unimplemented!()
-        }
-    };
-
     let read_cow_slice = || {
         if let Some( ref read_length_body ) = read_length_body {
             quote! {{
