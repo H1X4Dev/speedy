@@ -17,6 +17,8 @@ use quote::ToTokens;
 use syn::punctuated::Punctuated;
 use syn::spanned::Spanned;
 use syn::TypeParam;
+use crate::FieldAttribute::UTF16;
+use crate::kw::utf16;
 
 trait IterExt: Iterator + Sized {
     fn collect_vec( self ) -> Vec< Self::Item > {
@@ -52,7 +54,7 @@ mod kw {
     syn::custom_keyword!( varint );
     syn::custom_keyword!( unsafe_is_primitive );
     syn::custom_keyword!( always );
-    syn::custom_keyword!( wchar );
+    syn::custom_keyword!( utf16 );
 
     syn::custom_keyword!( u7 );
     syn::custom_keyword!( u8 );
@@ -758,7 +760,7 @@ struct Field< 'a > {
     skip: bool,
     varint: bool,
     constant_prefix: Option< syn::LitByteStr >,
-    wchar: bool
+    utf16: bool
 }
 
 impl< 'a > Field< 'a > {
@@ -861,7 +863,7 @@ enum FieldAttribute {
     VarInt {
         key_span: Span
     },
-    Wchar {
+    UTF16 {
         key_span: Span
     }
 }
@@ -895,9 +897,9 @@ impl syn::parse::Parse for FieldAttribute {
             FieldAttribute::Skip {
                 key_span: key_token.span()
             }
-        } else if lookahead.peek(kw::wchar) {
-            let key_token = input.parse::<kw::wchar>()?;
-            FieldAttribute::Wchar {
+        } else if lookahead.peek(kw::utf16) {
+            let key_token = input.parse::<kw::utf16>()?;
+            FieldAttribute::UTF16 {
                 key_span: key_token.span()
             }
         } else if lookahead.peek( kw::constant_prefix ) {
@@ -1216,7 +1218,7 @@ fn get_fields< 'a, I: IntoIterator< Item = &'a syn::Field > + 'a >( fields: I ) 
             let mut skip = false;
             let mut varint = false;
             let mut constant_prefix = None;
-            let mut wchar = false;
+            let mut utf16 = false;
             for attr in parse_attributes::< FieldAttribute >( &field.attrs )? {
                 match attr {
                     FieldAttribute::DefaultOnEof { key_span } => {
@@ -1265,8 +1267,8 @@ fn get_fields< 'a, I: IntoIterator< Item = &'a syn::Field > + 'a >( fields: I ) 
 
                         varint = true;
                     },
-                    FieldAttribute::Wchar { key_span: _key_span } => {
-                        wchar = true;
+                    FieldAttribute::UTF16 { key_span: _key_span } => {
+                        utf16 = true;
                     },
                 }
             }
@@ -1406,7 +1408,7 @@ fn get_fields< 'a, I: IntoIterator< Item = &'a syn::Field > + 'a >( fields: I ) 
                 skip,
                 varint,
                 constant_prefix,
-                wchar
+                utf16
             })
         });
 
@@ -1455,9 +1457,8 @@ fn read_field_body( field: &Field ) -> TokenStream {
         }
     };
 
-    // H1X4: impl wchar here
-    let read_string = |wchar| {
-        if wchar {
+    let read_string = |utf16| {
+        if utf16 {
             if let Some( ref read_length_body ) = read_length_body {
                 quote! {{
                     let _length_ = #read_length_body;
@@ -1690,7 +1691,7 @@ fn read_field_body( field: &Field ) -> TokenStream {
         }};
 
     let body = match field.ty.inner() {
-        Ty::String => read_string(field.wchar),
+        Ty::String => read_string(field.utf16),
         Ty::Vec( .. ) => read_vec(),
         Ty::CowSlice( .. ) => read_cow_slice(),
         Ty::CowStr( .. ) => read_cow_str(),
@@ -1789,9 +1790,8 @@ fn write_field_body( field: &Field ) -> TokenStream {
         }
     };
 
-    // H1X4: impl wchar here
-    let write_str = |wchar| {
-        if wchar {
+    let write_str = |utf16| {
+        if utf16 {
             quote! {{
                 #write_length_body
                 let utf16_bytes: Vec<u16> = #name.encode_utf16().collect();
@@ -1843,7 +1843,7 @@ fn write_field_body( field: &Field ) -> TokenStream {
         Ty::String |
         Ty::CowStr( .. ) |
         Ty::RefStr( .. )
-            => write_str(field.wchar),
+            => write_str(field.utf16),
         Ty::Vec( .. ) |
         Ty::CowSlice( .. ) |
         Ty::RefSliceU8( .. ) |
