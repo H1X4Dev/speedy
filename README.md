@@ -41,11 +41,19 @@ fn main() {
         enumeration: Enum::C
     };
 
+    // Serialize in Native:
     let bytes = original.write_to_vec().unwrap();
     let deserialized: Struct =
         Struct::read_from_buffer( &bytes ).unwrap();
 
     assert_eq!( original, deserialized );
+    
+    // Or serialize in BigEndian or any specific one:
+    let bytes2 = original.rite_to_vec_with_ctx( speedy::BigEndian::default() ).unwrap();
+    let deserialized2: Struct =
+        Struct::read_from_buffer_with_ctx( speedy::BigEndian::default(), &bytes2 ).unwrap();
+    
+    assert_eq!( original, deserialized2 );
 }
 ```
 
