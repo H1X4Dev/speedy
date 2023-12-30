@@ -1751,6 +1751,9 @@ fn readable_body< 'a >( types: &mut Vec< syn::Type >, st: &Struct< 'a > ) -> (To
     (body, initializer, minimum_bytes_needed)
 }
 
+// generic issue is here
+// it forgets to add const ggeneric so it ends up being XORv<T>
+
 fn write_field_body( field: &Field ) -> TokenStream {
     let name = field.var_name();
     let write_length_body = match field.length {
@@ -2518,6 +2521,7 @@ fn impl_writable( input: syn::DeriveInput ) -> Result< TokenStream, syn::Error >
 
     let (impl_params, ty_params, where_clause) = common_tokens( &input, &types, Trait::Writable );
     let output = quote! {
+        println!("here");
         impl< #impl_params C_: speedy::Context > speedy::Writable< C_ > for #name #ty_params #where_clause {
             #[inline]
             fn write_to< T_: ?Sized + speedy::Writer< C_ > >( &self, _writer_: &mut T_ ) -> std::result::Result< (), C_::Error > {
