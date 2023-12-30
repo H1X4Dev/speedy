@@ -1793,11 +1793,11 @@ fn write_field_body( field: &Field ) -> TokenStream {
     let write_str = |wchar| {
         if wchar {
             quote! {{
+                #write_length_body
                 let utf16_bytes: Vec<u16> = #name.encode_utf16().collect();
                 for &b in utf16_bytes.iter() {
                     _writer_.write_slice(&b.to_le_bytes())?;
                 }
-                #write_length_body
             }}
         } else {
             quote! {{
