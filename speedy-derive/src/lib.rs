@@ -2521,8 +2521,7 @@ fn impl_writable( input: syn::DeriveInput ) -> Result< TokenStream, syn::Error >
 
     let (impl_params, ty_params, where_clause) = common_tokens( &input, &types, Trait::Writable );
     let output = quote! {
-        println!("here");
-        impl< #impl_params C_: speedy::Context > speedy::Writable< C_ > for #name #ty_params #where_clause {
+        impl< #impl_params C_: speedy::Contextxcvbxcvbxcvbxcvbxvbxbxvxx > speedy::Writable< C_ > for #name #ty_params #where_clause {
             #[inline]
             fn write_to< T_: ?Sized + speedy::Writer< C_ > >( &self, _writer_: &mut T_ ) -> std::result::Result< (), C_::Error > {
                 #writer_body
