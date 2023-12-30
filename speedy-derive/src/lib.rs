@@ -1457,32 +1457,42 @@ fn read_field_body( field: &Field ) -> TokenStream {
 
     // H1X4: impl wchar here
     let read_string = |wchar| {
+        let read_utf16_string = quote! {{
+            let _length_ = #read_length_body;
+            let byte_count = _length_ * 2;
+            _reader_.read_vec(byte_count).map(|bytes| {
+                let mut utf16_chars = Vec::with_capacity(bytes.len() / 2);
+                for chunk in bytes.chunks_exact(2) {
+                    utf16_chars.push(u16::from_le_bytes([chunk[0], chunk[1]]));
+                }
+                String::from_utf16(&utf16_chars).unwrap_or_else(|_| String::new())
+            })
+        }};
+
+        let read_utf8_string = quote! {{
+            let _length_ = #read_length_body;
+            _reader_.read_vec(_length_).and_then(speedy::private::vec_to_string)
+        }};
+
+        let read_utf8_string_eof = quote! {{
+            _reader_.read_vec_until_eof().and_then(speedy::private::vec_to_string)
+        }};
+
         if wchar {
             quote! {{
             if let Some(ref read_length_body) = read_length_body {
-                let _length_ = #read_length_body;
-                _reader_.read_vec(_length_ * 2).map(|bytes| {
-                    String::from_utf16(&bytes.chunks_exact(2)
-                        .map(|chunk| u16::from_ne_bytes([chunk[0], chunk[1]]))
-                        .collect::<Vec<u16>>())
-                        .unwrap_or_else(|_| String::new())
-                })
+                #read_utf16_string
             } else {
-                quote! {{
-                    // Handling variable-length UTF-16 strings is complex and not covered here
-                    unimplemented!()
-                }}
+                // Handling variable-length UTF-16 strings is not implemented
+                unimplemented!()
             }
         }}
         } else {
             quote! {{
             if let Some(ref read_length_body) = read_length_body {
-                let _length_ = #read_length_body;
-                _reader_.read_vec(_length_).and_then(speedy::private::vec_to_string)
+                #read_utf8_string
             } else {
-                quote! {{
-                    _reader_.read_vec_until_eof().and_then(speedy::private::vec_to_string)
-                }}
+                #read_utf8_string_eof
             }
         }}
         }
