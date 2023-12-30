@@ -16,7 +16,7 @@ use proc_macro2::{Span, TokenStream};
 use quote::ToTokens;
 use syn::punctuated::Punctuated;
 use syn::spanned::Spanned;
-use syn::TypeParam;
+use syn::{ConstParam, TypeParam};
 
 trait IterExt: Iterator + Sized {
     fn collect_vec( self ) -> Vec< Self::Item > {
@@ -289,9 +289,18 @@ fn common_tokens( ast: &syn::DeriveInput, types: &[syn::Type], trait_variant: Tr
     let impl_params = {
         let lifetime_params = ast.generics.lifetimes().map( |alpha| quote! { #alpha } );
         let type_params = ast.generics.type_params().map( |ty| { let ty_without_default = TypeParam { default: None, ..ty.clone() }; quote! { #ty_without_default } });
-        let params = lifetime_params.chain( type_params ).collect_vec();
+        let const_params = ast.generics.const_params().map(|cty| {
+            let cty_without_default = ConstParam {
+                default: None,
+                ..cty.clone()
+            };
+            quote! {
+                #cty_without_default
+            }
+        });
+        let params = lifetime_params.chain( type_params ).chain(const_params).collect_vec();
         quote! {
-            #(#params, aaaa)*
+            #(#params,)*
         }
     };
 
