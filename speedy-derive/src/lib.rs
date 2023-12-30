@@ -52,6 +52,7 @@ mod kw {
     syn::custom_keyword!( varint );
     syn::custom_keyword!( unsafe_is_primitive );
     syn::custom_keyword!( always );
+    syn::custom_keyword!( wchar );
 
     syn::custom_keyword!( u7 );
     syn::custom_keyword!( u8 );
@@ -1440,6 +1441,7 @@ fn read_field_body( field: &Field ) -> TokenStream {
         }
     };
 
+    // H1X4: impl wchar here
     let read_string = || {
         if let Some( ref read_length_body ) = read_length_body {
             quote! {{
@@ -1741,6 +1743,7 @@ fn write_field_body( field: &Field ) -> TokenStream {
         }
     };
 
+    // H1X4: impl wchar here
     let write_str = ||
         quote! {{
             #write_length_body
