@@ -92,9 +92,9 @@ fn possibly_uses_generic_ty( generic_types: &[&syn::Ident], ty: &syn::Type ) -> 
                                 syn::GenericArgument::Type( inner_ty ) => possibly_uses_generic_ty( generic_types, inner_ty ),
                                 syn::GenericArgument::AssocType( assoc_type ) => possibly_uses_generic_ty( generic_types, &assoc_type.ty ),
                                 // TODO: How to handle these?
-                                syn::GenericArgument::Constraint( .. ) => true,
+                                syn::GenericArgument::Constraint( .. ) => false,
                                 syn::GenericArgument::Const( .. ) => false,
-                                syn::GenericArgument::AssocConst(_) => true,
+                                syn::GenericArgument::AssocConst(_) => false,
                                 _ => true,
                             }
                         })
@@ -318,7 +318,8 @@ fn common_tokens( ast: &syn::DeriveInput, types: &[syn::Type], trait_variant: Tr
                     if is_forced || (is_packed && parse_primitive_ty( ty ).is_some()) {
                         None
                     } else {
-                        Some( quote! { #ty: speedy::private::ZeroCopyable< C_, T_ > } )
+                        None // test
+                        //Some( quote! { #ty: speedy::private::ZeroCopyable< C_, T_ > } )
                     }
                 },
             }
